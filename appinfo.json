@@ -1,0 +1,21 @@
+{
+  "uuid": "9f27ccdd-02f7-49f1-8da9-197e1daa7af9",
+  "shortName": "Color Browser",
+  "longName": "Color Browser",
+  "companyName": "Chris Lewis",
+  "versionCode": 1,
+  "versionLabel": "1.0",
+  "watchapp": {
+    "watchface": false
+  },
+  "targetPlatforms": [
+    "basalt"
+  ],
+  "sdkVersion": "3",
+  "appKeys": {
+    "dummy": 0
+  },
+  "resources": {
+    "media": []
+  }
+}
