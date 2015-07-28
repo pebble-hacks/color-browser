@@ -9,7 +9,7 @@
 
 static Window *s_main_window;
 static TextLayer *s_output_layer;
-static InverterLayer *s_inv_layer;
+static Layer *s_selection_layer;
 static Layer *s_canvas_layer;
 
 static uint8_t rgb_values[3];
@@ -39,6 +39,11 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
   graphics_fill_rect(ctx, GRect(0, 0, bounds.size.w, bounds.size.h), 0, GCornerNone);
 }
 
+static void selection_update_proc(Layer *layer, GContext *ctx) {
+  graphics_context_set_fill_color(ctx, GColorBlack);
+  graphics_fill_rect(ctx, layer_get_bounds(layer), 0, GCornerNone);
+}
+
 static void update_display() {
   // Update color
   layer_mark_dirty(s_canvas_layer);
@@ -51,13 +56,13 @@ static void update_display() {
   // Selection box location
   switch(channel_index) {
     case R:
-      layer_set_frame(inverter_layer_get_layer(s_inv_layer), GRect(62, 0, 18, 26));
+      layer_set_frame(s_selection_layer, GRect(62, 20, 18, 4));
       break;
     case G:
-      layer_set_frame(inverter_layer_get_layer(s_inv_layer), GRect(80, 0, 18, 26));
+      layer_set_frame(s_selection_layer, GRect(80, 20, 18, 4));
       break;
     case B:
-      layer_set_frame(inverter_layer_get_layer(s_inv_layer), GRect(98, 0, 18, 26));
+      layer_set_frame(s_selection_layer, GRect(98, 20, 18, 4));
       break;
     default: break;
   }
@@ -103,26 +108,29 @@ static void main_window_load(Window *window) {
   layer_set_update_proc(s_canvas_layer, canvas_update_proc);
   layer_add_child(window_layer, s_canvas_layer);
 
-  s_output_layer = text_layer_create(GRect(0, -4, window_bounds.size.w, 30));
+  s_output_layer = text_layer_create(GRect(0, -6, window_bounds.size.w, 30));
   text_layer_set_text_color(s_output_layer, GColorBlack);
   text_layer_set_background_color(s_output_layer, GColorWhite);
   text_layer_set_text_alignment(s_output_layer, GTextAlignmentCenter);
   text_layer_set_font(s_output_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24));
   layer_add_child(window_layer, text_layer_get_layer(s_output_layer));
 
-  s_inv_layer = inverter_layer_create(GRect(0, 0, 0, 0));
-  layer_add_child(window_layer, inverter_layer_get_layer(s_inv_layer));
+  s_selection_layer = layer_create(GRect(0, 0, 0, 0));
+  layer_set_update_proc(s_selection_layer, selection_update_proc);
+  layer_add_child(window_layer, s_selection_layer);
 }
 
 static void main_window_unload(Window *window) {
   text_layer_destroy(s_output_layer);
   layer_destroy(s_canvas_layer);
-  inverter_layer_destroy(s_inv_layer);
+  layer_destroy(s_selection_layer);
 }
 
 static void init() {
   s_main_window = window_create();
+#ifdef PBL_SDK_2
   window_set_fullscreen(s_main_window, true);
+#endif
   window_set_click_config_provider(s_main_window, click_config_provider);
   window_set_window_handlers(s_main_window, (WindowHandlers) {
     .load = main_window_load,
